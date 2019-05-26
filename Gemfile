@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.4.0'
+ruby '2.6.3'
 
 gem 'bootsnap', '>= 1.1.0', require: false
 gem 'coffee-rails', '~> 4.2'
@@ -29,6 +29,6 @@ group :test do
   gem 'faker'
   gem 'rails-controller-testing'
   gem 'rspec-rails'
-  gem 'shoulda-matchers', '~> 3.1.2'
+  gem 'shoulda-matchers'
   gem 'should_not'
 end
