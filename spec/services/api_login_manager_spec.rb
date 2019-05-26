@@ -1,22 +1,14 @@
 require 'rails_helper'
 
-# Los skips sirven para prevenir la ejecución del it, así que es necesario
-# borrarlos (en su lugar implementen los tests, no sean vagos).
-
 RSpec.describe ApiLoginManager do
-  # Idealmente la contraseña del usuario estaría encriptada en la base
-  # de datos, por lo que no vamos a poder recuperarla del usuario para
-  # utilizarla. Es por eso que conviene usarla desde una variable con
-  # let!(:password) { SecureRandom.hex }. Al crear el usuario,
-  # en let!(:user) { ... }, usar esta variable.
   let!(:password) { SecureRandom.hex }
 
-  let!(:user) {  } # -- crear usuario con FactoryBot -- #
+  let!(:user) { create(:user, password: password) }
 
   describe '#call' do
     context 'when user provided data is valid' do
       before do
-        # Realizar un stub del ExternalValidator para que se ejecuta realmente
+        allow(ExternalValidator).to receive(:call).and_return(true)
       end
 
       subject do
@@ -24,64 +16,104 @@ RSpec.describe ApiLoginManager do
       end
 
       it "update user's auth_token" do
-        skip 'Una vez que definan a user, este test va a fallar. ¿Por qué?'
-        expect { subject }.to change { user.auth_token }
+        # skip 'Una vez que definan a user, este test va a fallar. ¿Por qué?'
+
+        # Esto es porque el registro no se actualizo con los datos modificados
+        # luego de la llamada a ApiLoginManager, por lo que es necesario hacer
+        # un reload
+
+        expect { subject }.to change { user.reload.auth_token }
       end
 
       it 'returns the auth_token' do
-        skip 'Implementar'
+        expect(subject).to eq(user.reload.auth_token)
+        # Por qué esto no anda pero lo de arriba si?
+        # expect(user.reload.auth_token).to eq(subject)
       end
     end
 
     context 'when no email is provided' do
-      subject {  } # implementar
+      subject do
+        described_class.new(password: password)
+      end
+
+      let!(:subject_response) { subject.call }
 
       it 'returns false' do
-        skip 'Implementar'
+        expect(subject_response).to be false
       end
 
       it 'returns EMPTY_EMAIL error with a reader' do
-        skip 'Implementar'
+        expect(subject.error).to eq(ApiLoginManager::EMPTY_EMAIL)
       end
     end
 
     context 'when no password is provided' do
-      subject {  } # implementar
+      subject do
+        described_class.new(email: user.email)
+      end
+
+      let!(:subject_response) { subject.call }
 
       it 'returns false' do
-        skip 'Implementar'
+        expect(subject_response).to be false
       end
 
       it 'returns EMPTY_PASSWORD error with a reader' do
-        skip 'Implementar'
+        expect(subject.error).to eq(ApiLoginManager::EMPTY_PASSWORD)
       end
     end
 
     context 'when the email is incorrect' do
-      subject {  } # implementar
+      subject do
+        described_class.new(email: Faker::Internet.email, password: password)
+      end
+
+      let!(:subject_response) { subject.call }
 
       it 'returns false' do
-        skip 'Implementar'
+        expect(subject_response).to be false
       end
 
       it 'returns USER_NOT_FOUND error with a reader' do
-        skip 'Implementar'
+        expect(subject.error).to eq(ApiLoginManager::USER_NOT_FOUND)
       end
     end
 
     context 'when the password is incorrect' do
-      subject {  } # implementar
+      subject do
+        described_class.new(email: user.email, password: SecureRandom.uuid)
+      end
+
+      let!(:subject_response) { subject.call }
 
       it 'returns false' do
-        skip 'Implementar'
+        expect(subject_response).to be false
       end
 
       it 'returns WRONG_PASSWORD error with a reader' do
-        skip 'Implementar'
+        expect(subject.error).to eq(ApiLoginManager::WRONG_PASSWORD)
       end
     end
 
-    # Definir un nuevo context para cuando la conexión
-    # con ExternalValidator falla. Acá los quiero ver...
+    context 'when ExternalValidator conection fails' do
+      before do
+        allow(ExternalValidator).to receive(:call).and_return(false)
+      end
+
+      subject do
+        described_class.new(email: user.email, password: password)
+      end
+
+      let!(:subject_response) { subject.call }
+
+      it 'returns false' do
+        expect(subject_response).to be false
+      end
+
+      it 'returns EXTERNAL_VALIDATOR error with a reader' do
+        expect(subject.error).to eq(ApiLoginManager::EXTERNAL_VALIDATOR)
+      end
+    end
   end
 end
