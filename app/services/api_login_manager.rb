@@ -1,12 +1,14 @@
+# frozen_string_literal: true
+
 class ApiLoginError < StandardError; end
 
 class ApiLoginManager
   ERRORS = [
-    USER_NOT_FOUND     = 'El usuario no existe'.freeze,
-    EMPTY_EMAIL        = 'El email no puede estar en blanco.'.freeze,
-    EMPTY_PASSWORD     = 'La contraseña no puede estar en blanco.'.freeze,
-    WRONG_PASSWORD     = 'La contraseña es incorrecta'.freeze,
-    EXTERNAL_VALIDATOR = 'El usuario ya no tiene cuota disponible'.freeze
+    USER_NOT_FOUND     = 'El usuario no existe',
+    EMPTY_EMAIL        = 'El email no puede estar en blanco',
+    EMPTY_PASSWORD     = 'La contraseña no puede estar en blanco',
+    WRONG_PASSWORD     = 'La contraseña es incorrecta',
+    EXTERNAL_VALIDATOR = 'El usuario ya no tiene cuota disponible'
   ].freeze
 
   attr_reader :error
