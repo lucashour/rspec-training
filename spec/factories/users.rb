@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :user do
     auth_token { SecureRandom.hex }
-    email { Faker::Internet.email }
+    email { Faker::Internet.unique.email }
     password { SecureRandom.uuid }
 
     # Definición de atributos transitorios o transients
