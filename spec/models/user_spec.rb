@@ -3,39 +3,61 @@ require 'rails_helper'
 RSpec.describe User, type: :model do
   describe 'Factory' do
     it 'has a valid factory' do
-      # Testear que el factory definido es válido.
+      build(:user).should be_valid
     end
   end
 
   describe 'Associations' do
     # Testear asociaciones (shoulda-matchers).
-    # https://github.com/thoughtbot/shoulda-matchers#activerecord-matchers
+    it { should have_many(:posts) }
   end
 
   describe 'Presence validations' do
     # Testear validaciones de presencia (shoulda-matchers).
-    # https://github.com/thoughtbot/shoulda-matchers#activemodel-matchers
+    it { should validate_presence_of(:email) }
+    it { should validate_presence_of(:password) }
+    it { should validate_presence_of(:role) }
   end
-
+  
   describe 'Uniqueness validations' do
     # Testear validaciones de unicidad (shoulda-matchers).
-    # https://github.com/thoughtbot/shoulda-matchers#activemodel-matchers
+    subject{build(:user)} #PORQUE??
+    it { should validate_uniqueness_of(:email) }
   end
-
   describe 'Length validations' do
     # Testear validaciones de longitud (shoulda-matchers).
-    # https://github.com/thoughtbot/shoulda-matchers#activemodel-matchers
+    it { should validate_length_of(:password).is_at_least(8) }
   end
 
   describe 'Enumeratives' do
-    # Testear definición de enumerativos (shoulda-matchers).
+    it{ should define_enum_for(:role).with([:admin, :regular]) }
   end
 
   # Testear métodos de instancia y de clase como para el caso de cualquier
   # otra clase Ruby (similar a testear ApiLoginManager).
   describe '#valid_password?' do
-    # Testear funcionamiento de método. Podemos definir dos contexts:
-    #  - 'when given value is different from password'
-    #  - 'when given value is equal to password'
+    let!(:password) { SecureRandom.hex }
+
+    let!(:user) { FactoryBot.create(:user, password: password) } 
+    context 'when given value is equal to password' do
+      subject do
+        build(:user, password: password).valid_password?(password)
+      end
+
+      it 'returns true' do
+        expect(subject).to be true
+      end
+    end
+
+    context 'when given value is different from password' do
+      subject do
+        build(:user, password: password).valid_password?('sarasa')
+      end
+
+      it 'returns false' do
+        expect(subject).to be false
+      end
+    end
+
   end
 end
